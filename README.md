@@ -1,5 +1,4 @@
-
-# Electron App
+# Api Tester
 
 ## Overview
 
@@ -16,10 +15,10 @@ This Electron application is designed to facilitate API testing and development.
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/gurr-i/api-tester-desk.git
    ```
-
 2. Navigate to the project directory:
 
    ```bash
