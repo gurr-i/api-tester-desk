@@ -1,0 +1,47 @@
+{
+  "name": "api-tester",
+  "version": "1.0.0",
+  "description": "My Electron application",
+  "main": "main.js",
+  "author": "Gurveer",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "bootstrap": "^5.3.2"
+  },
+  "devDependencies": {
+    "electron": "^35.0.3",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.electron.app",
+    "productName": "API Tester",
+    "directories": {
+      "output": "dist"
+    },
+    "icon": "icon.png",
+    "files": [
+      "**/*",
+      "!**/node_modules/**/*",
+      "!**/dist/**/*",
+      "!**/package-lock.json",
+      "!**/README.md",
+      "!**/LICENSE",
+      "!**/dist_*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "uninstallDisplayName": "Api tester App",
+      "allowToChangeInstallationDirectory": false
+    }
+  }
+}

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>API Tester @Gurveer</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <!-- <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+<style>
+        :root {
+            --transition-speed: 0.3s;
+            --line-number-color: #6c757d;
+            --response-border: #dee2e6;
+        }
+        body {
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1030;
+            transition: all var(--transition-speed);
+        }
+        .status-code {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+        .status-2xx { background-color: #d4edda; color: #155724; }
+        .status-3xx { background-color: #fff3cd; color: #856404; }
+        .status-4xx { background-color: #f8d7da; color: #721c24; }
+        .status-5xx { background-color: #dc3545; color: #fff; }
+        body.dark-mode { background-color: #212529 !important; color: #f8f9fa; }
+        body.dark-mode .card {
+            background-color: #343a40;
+            border-color: #495057;
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+        }
+        body.dark-mode .form-control,
+        body.dark-mode .form-select,
+        body.dark-mode pre,
+        body.dark-mode .list-group-item {
+            background-color: #343a40 !important;
+            border-color: #495057;
+            color: #f8f9fa;
+            transition: all var(--transition-speed);
+        }
+        body.dark-mode .nav-tabs .nav-link {
+            color: #f8f9fa;
+            border-color: transparent;
+        }
+        body.dark-mode .nav-tabs .nav-link:hover {
+            border-color: #495057;
+        }
+        body.dark-mode .nav-tabs .nav-link.active {
+            background-color: #343a40;
+            border-color: #495057;
+            color: #f8f9fa;
+        }
+        body.dark-mode .btn-outline-secondary {
+            color: #f8f9fa;
+            border-color: #6c757d;
+        }
+        body.dark-mode .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: #f8f9fa;
+        }
+        body.dark-mode .btn-outline-danger {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+        body.dark-mode .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: #f8f9fa;
+        }
+        body.dark-mode .btn-outline-primary {
+            color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        body.dark-mode .btn-outline-primary:hover {
+            background-color: #0d6efd;
+            color: #f8f9fa;
+        }
+        body.dark-mode .status-2xx { background-color: #198754; color: #fff; }
+        body.dark-mode .status-3xx { background-color: #ffc107; color: #000; }
+        body.dark-mode .status-4xx { background-color: #dc3545; color: #fff; }
+        body.dark-mode .status-5xx { background-color: #6c0b17; color: #fff; }
+        
+        /* Response Formatting */
+        .response-size {
+            font-size: 0.875rem;
+            color: var(--line-number-color);
+            margin-bottom: 0.5rem;
+        }
+        .header-item {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid var(--response-border);
+        }
+        .header-key {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .header-value {
+            word-break: break-all;
+        }
+        .response-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--response-border);
+            border-radius: 0.375rem;
+        }
+        pre {
+            position: relative;
+            margin: 0;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .line-number {
+            display: inline-block;
+            width: 2rem;
+            color: var(--line-number-color);
+            text-align: right;
+            margin-right: 1rem;
+            user-select: none;
+        }
+        .json-response, .xml-response, .html-response {
+            counter-reset: line;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            opacity: 0.7;
+            transition: opacity var(--transition-speed);
+        }
+        .copy-btn:hover {
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .row > [class*='col-'] { margin-bottom: 1rem; }
+            .theme-toggle { top: 0.5rem; right: 0.5rem; }
+        }
+        body.dark-mode {
+            --line-number-color: #adb5bd;
+            --response-border: #495057;
+        }
+        body.dark-mode .header-key {
+            color: #6ea8fe;
+        }
+        body.dark-mode .response-container {
+            background-color: #343a40;
+            border-color: #495057;
+        }
+        body.dark-mode .copy-btn {
+            background-color: #495057;
+            color: #f8f9fa;
+            border-color: #6c757d;
+        }
+        body.dark-mode .copy-btn:hover {
+            background-color: #6c757d;
+        }
+        body.dark-mode .env-variables input {
+            background-color: #343a40 !important;
+            color: #f8f9fa;
+            border-color: #495057;
+        }
+        body.dark-mode .header-item {
+            border-color: #495057;
+        }
+        body.dark-mode .header-value {
+            color: #f8f9fa;
+        }
+
+        /* Timing Metrics Styles */
+        .timing-metrics {
+            margin-bottom: 1rem;
+        }
+        .timing-bar {
+            height: 24px;
+            background: #f8f9fa;
+            border: 1px solid var(--response-border);
+            border-radius: 4px;
+            position: relative;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .timing-phase {
+            height: 100%;
+            position: absolute;
+            transition: width 0.3s ease;
+        }
+        .timing-phase.dns { background-color: #0d6efd; }
+        .timing-phase.tcp { background-color: #198754; }
+        .timing-phase.tls { background-color: #ffc107; }
+        .timing-phase.ttfb { background-color: #6f42c1; }
+        .timing-phase.download { background-color: #dc3545; }
+
+        /* Image Preview Styles */
+        .image-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+            border: 1px solid var(--response-border);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            min-height: 200px;
+        }
+
+        body.dark-mode .image-preview-container {
+            background-color: #343a40;
+        }
+
+        #previewImage {
+            max-width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+        .timing-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .timing-details div {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        body.dark-mode .timing-bar { background-color: #343a40; }
+        body.dark-mode .timing-details div { background-color: rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body class="bg-light">
+    <button class="btn btn-outline-secondary theme-toggle" id="themeToggle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon-stars" viewBox="0 0 16 16">
+            <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+            <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162z"/>
+        </svg>
+    </button>
+    <div class="container py-4">
+        <h1 class="mb-4">API Tester</h1>
+        <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="request-tab" data-bs-toggle="tab" data-bs-target="#request" type="button" role="tab">Request</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">History</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="collections-tab" data-bs-toggle="tab" data-bs-target="#collections" type="button" role="tab">Collections</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="environments-tab" data-bs-toggle="tab" data-bs-target="#environments" type="button" role="tab">Environments</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="mainTabsContent">
+            <div class="tab-pane fade show active" id="request" role="tabpanel">
+                <div class="card mb-4">
+            <div class="card-body">
+                <form id="apiForm">
+                    <div class="row mb-3">
+                        <div class="col-2">
+                            <select class="form-select" id="method">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                                <option value="PATCH">PATCH</option>
+                            </select>
+                        </div>
+                        <div class="col-10">
+                            <input type="url" class="form-control" id="url" placeholder="Enter API URL" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">Headers</label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addHeader">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+                                    <path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z"/>
+                                </svg>
+                                Add Header
+                            </button>
+                        </div>
+                        <div id="headers" class="mb-2">
+                            <div class="row mb-2 header-row">
+                                <div class="col-5">
+                                    <input type="text" class="form-control" placeholder="Key">
+                                </div>
+                                <div class="col-5">
+                                    <input type="text" class="form-control" placeholder="Value">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-outline-danger btn-sm w-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Request Body</label>
+                        <textarea class="form-control" id="requestBody" rows="5" placeholder="Enter request body in JSON format"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Request</button>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Response</h5>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="copyAllResponse">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard me-1" viewBox="0 0 16 16">
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                        </svg>
+                        Copy All
+                    </button>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Status: <span id="status"></span></label>
+                </div>
+                <div id="imagePreview" class="mb-3" style="display: none;">
+                    <label class="form-label">Image Preview</label>
+                    <div class="image-preview-container">
+                        <img id="previewImage" class="img-fluid rounded" style="max-height: 300px; cursor: pointer;" onclick="window.open(this.src)" alt="Response Image">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Timing Metrics</label>
+                    <div id="timingMetrics" class="timing-metrics">
+                        <div class="timing-bar">
+                            <div class="timing-phase dns" title="DNS Lookup"></div>
+                            <div class="timing-phase tcp" title="TCP Connection"></div>
+                            <div class="timing-phase tls" title="TLS Handshake"></div>
+                            <div class="timing-phase ttfb" title="Time to First Byte"></div>
+                            <div class="timing-phase download" title="Content Download"></div>
+                        </div>
+                        <div class="timing-details">
+                            <div>DNS Lookup: <span id="dnsTime">-</span></div>
+                            <div>TCP Connection: <span id="tcpTime">-</span></div>
+                            <div>TLS Handshake: <span id="tlsTime">-</span></div>
+                            <div>Time to First Byte: <span id="ttfbTime">-</span></div>
+                            <div>Content Download: <span id="downloadTime">-</span></div>
+                            <div>Total Duration: <span id="totalTime">-</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Response Headers</label>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="formatHeaders">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-text-indent-left" viewBox="0 0 16 16">
+                                <path d="M2 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm.646 2.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L4.293 8 2.646 6.354a.5.5 0 0 1 0-.708zM7 6.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                            Format
+                        </button>
+                    </div>
+                    <div class="response-container">
+                        <pre id="responseHeaders" class="bg-light p-3 rounded mb-0"></pre>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Response Body</label>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="formatBody">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-text-indent-left" viewBox="0 0 16 16">
+                                <path d="M2 3.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm.646 2.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L4.293 8 2.646 6.354a.5.5 0 0 1 0-.708zM7 6.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                            Format
+                        </button>
+                    </div>
+                    <div class="response-container">
+                        <pre id="responseBody" class="bg-light p-3 rounded mb-0"></pre>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Code Snippets</label>
+                        <div>
+                            <select class="form-select form-select-sm d-inline-block w-auto me-2" id="snippetLanguage">
+                                <option value="curl">cURL</option>
+                                <option value="axios">Axios</option>
+                                <option value="fetch">Fetch</option>
+                                <option value="python">Python (requests)</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="copySnippet">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                </svg>
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="response-container">
+                        <pre id="codeSnippet" class="bg-light p-3 rounded mb-0"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+            <div class="tab-pane fade" id="history" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Request History</h5>
+                            <button class="btn btn-outline-danger btn-sm" id="clearHistory">Clear History</button>
+                        </div>
+                        <div id="historyList" class="list-group"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="collections" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Collections</h5>
+                            <button class="btn btn-primary btn-sm" id="addCollection">New Collection</button>
+                        </div>
+                        <div id="collectionsList"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="environments" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Environments</h5>
+                            <div>
+                                <select class="form-select form-select-sm d-inline-block w-auto me-2" id="activeEnvironment">
+                                    <option value="">No Environment</option>
+                                </select>
+                                <button class="btn btn-primary btn-sm" id="addEnvironment">New Environment</button>
+                            </div>
+                        </div>
+                        <div id="environmentsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js" defer></script>
+    <script type="module" src="storage.js"></script>
+    <script type="module" src="renderer.js"></script>
+</body>
+</html>
